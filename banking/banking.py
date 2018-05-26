@@ -110,7 +110,7 @@ if __name__ == '__main__':
 	driver.implicitly_wait(10)
 	print('Loading Internet Banking...')
 	# books = [elem.text for elem in driver.find_elements_by_css_selector('.title .value')]
-	
+
 
 	with open('./.USER-DATA', 'r') as userData:
 		user = userData.read().strip('\n')
