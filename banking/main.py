@@ -7,11 +7,8 @@ import time
 # import getpass
 import os.path
 import csv
+import json
 import re
-
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
@@ -19,28 +16,24 @@ from oauth2client import file, client, tools
 import nab
 
 time0 = time.time()
-# driver = webdriver.Chrome()
-# driver.implicitly_wait(10)
-# print('Loading Internet Banking...')
 
-# with open('./.USER-DATA', 'r') as userData:
-	# user = userData.read().strip('\n')
+with open('./.USER-DATA', 'r') as f:
+	data = json.load(f)
+	user = data['user']
 
-# loginURL = 'https://ib.nab.com.au/nabib/login.ctl'
-# errorURL = loginURL+'?error=201001'
-# sign_in(driver, user, loginURL, errorURL)
-# download_transactions(driver)
+nab.sign_in(user)
+nab.download_transactions()
 
-card_holders = {'V0133':'Jaime',
-				'V8479':'Helena',
-				'V3608':'Jaime-old'	}
-
+filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
 rows = []
 pat1 = re.compile(r'(V\d{4}) (\d\d/\d\d) ([\w\s]+) (\d+)')
-filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
+
 while not os.path.exists(filePath):
 	print("waiting for download to finish")
 	time.sleep(1)
+
+nab.quit()
+
 with open(filePath) as f:
 	reader = csv.reader(f)
 	for row in reader:
@@ -56,8 +49,6 @@ with open(filePath) as f:
 			rows.append([date, amount, card, description, transaction_type, number])
 		else:
 			pass # deal with other format transactions
-
-# os.remove(filePath)
 
 
 
@@ -83,5 +74,11 @@ result = service.spreadsheets().values().update(
 	).execute()
 print('{0} cells updated.'.format(result.get('updatedCells')))
 
+coles = 0
+for row in rows:
+	if 'coles' in row[3].lower():
+		coles += float(row[1])
+
+print(coles)
 # driver.quit()
 print('Total time: {} s'.format(time.time() - time0))

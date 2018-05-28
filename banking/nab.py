@@ -8,7 +8,13 @@ import getpass
 import os.path
 import csv
 
-def load_all_items(driver):
+driver = webdriver.Chrome()
+driver.implicitly_wait(10)
+
+loginURL = 'https://ib.nab.com.au/nabib/login.ctl'
+errorURL = loginURL+'?error=201001'
+
+def load_all_items():
 	'''
 	Scroll down all the way in order to load all the items in the category.
 	'''
@@ -34,7 +40,7 @@ def load_all_items(driver):
 		last_height = new_height
 
 
-def sign_in(driver, user, loginURL, errorURL=False):
+def sign_in(user):
 
 	driver.get(loginURL)
 
@@ -49,36 +55,29 @@ def sign_in(driver, user, loginURL, errorURL=False):
 	time.sleep(1)
 
 	# TODO: fix wrong pw retry block
-	if errorURL:
-		while driver.current_url == errorURL:
-			print('Wrong password')
-			print('Try again')
-			driver.find_element_by_id('username').send_keys(user)
-			passwd = getpass.getpass('Password: ')
-			driver.find_element_by_id('password').send_keys(passwd, Keys.ENTER)
-			del passwd
-			print('Logging in...')
+	while driver.current_url == errorURL:
+		print('Wrong password')
+		print('Try again')
+		driver.find_element_by_id('username').send_keys(user)
+		passwd = getpass.getpass('Password: ')
+		driver.find_element_by_id('password').send_keys(passwd, Keys.ENTER)
+		del passwd
+		print('Logging in...')
 
-			time.sleep(1)
-
-def filter_transactions(driver, period=90):
-	driver.find_element_by_xpath('//*[@id="transactions"]/app-component/ib-transactions/div/div/div/ib-filter/div/form/div/div[1]/div/div[2]/div[2]/button').click()
-	driver.find_element_by_xpath('//*[@id="input-transaction-period"]/a/span[2]/div').click()
-
-	if period == 90:
-		pass
-		# TODO: finish this
+		time.sleep(1)
 
 
-def download_transactions(driver):
+
+def download_transactions():
+	filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
+	if os.path.isfile(filePath):
+		os.remove(filePath)
 
 	print('Finding transactions...')
 	driver.get('https://ib.nab.com.au/nabib/transactionHistorySelectAccount.ctl#/transactions')
-	# time.sleep(1)
-
 
 	driver.find_element_by_xpath('//*[@id="accountSelect"]').click()
-	time.sleep(1)
+	# time.sleep(1)
 
 	# TODO: add if statement to choose account from parameters passed
 	jointAcct = '//*[@id="ui-select-choices-row-0-0"]/div/div/ib-ui-select-choices/div/div[2]'
@@ -86,13 +85,16 @@ def download_transactions(driver):
 	savingsAcct = '//*[@id="ui-select-choices-row-0-2"]/div/div/ib-ui-select-choices/div'
 
 	driver.find_element_by_xpath(jointAcct).click()
-	time.sleep(1)
+	# time.sleep(1)
 
 	# TODO: change number of transactions to maximum or last year or whatever
 	driver.find_element_by_xpath('//*[@id="exportTransactionsBtn"]').click()
 	print('Downloading transactions...')
 
+def quit():
 
+	driver.quit()
+	
 # def extract_transactions():
 # 	filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
 # 	while not os.path.exists(filePath):
@@ -103,3 +105,12 @@ def download_transactions(driver):
 # 		for row in reader:
 # 			print('{:<9} {:>9}  {}'.format(row[0], row[1], row[5]))
 # 	os.remove(filePath)
+
+
+# def filter_transactions(period=90):
+# 	driver.find_element_by_xpath('//*[@id="transactions"]/app-component/ib-transactions/div/div/div/ib-filter/div/form/div/div[1]/div/div[2]/div[2]/button').click()
+# 	driver.find_element_by_xpath('//*[@id="input-transaction-period"]/a/span[2]/div').click()
+#
+# 	if period == 90:
+# 		pass
+# 		# TODO: finish this
