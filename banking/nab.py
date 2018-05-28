@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/Users/Jaime/anaconda3/bin/python
 
 import time
 from selenium import webdriver
@@ -7,9 +7,6 @@ from selenium.webdriver.common.keys import Keys
 import getpass
 import os.path
 import csv
-
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
 def load_all_items(driver):
 	'''
@@ -96,72 +93,13 @@ def download_transactions(driver):
 	print('Downloading transactions...')
 
 
-def extract_transactions():
-	filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
-	while not os.path.exists(filePath):
-		print("waiting for download to finish")
-		time.sleep(1)
-	with open(filePath) as f:
-		reader = csv.reader(f)
-		for row in reader:
-			print('{:<9} {:>9}  {}'.format(row[0], row[1], row[5]))
-	os.remove(filePath)
-
-def worksheet(sheet_name):
-
-    scope = ['https://spreadsheets.google.com/feeds',
-             'https://www.googleapis.com/auth/drive']
-
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
-    gc = gspread.authorize(credentials)
-    wks = gc.open(sheet_name).sheet1
-    return wks
-
-def writerow(wks, row, i=1):
-	cell_list = wks.range('A{}:AA{}'.format(i,i))
-
-	for cell in cell_list:
-		try:
-			cell.value = row.pop(0)
-		except IndexError:
-			cell.value = ''
-
-	# Update in batch
-	wks.update_cells(cell_list)
-
-
-if __name__ == '__main__':
-	time0 = time.time()
-	driver = webdriver.Chrome()
-	driver.implicitly_wait(10)
-	print('Loading Internet Banking...')
-	# books = [elem.text for elem in driver.find_elements_by_css_selector('.title .value')]
-
-
-	with open('./.USER-DATA', 'r') as userData:
-		user = userData.read().strip('\n')
-
-	loginURL = 'https://ib.nab.com.au/nabib/login.ctl'
-	errorURL = loginURL+'?error=201001'
-	sign_in(driver, user, loginURL, errorURL)
-	download_transactions(driver)
-
-	wks = worksheet('API Test')
-	rows = []
-
-	filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
-	while not os.path.exists(filePath):
-		print("waiting for download to finish")
-		time.sleep(1)
-	with open(filePath) as f:
-		reader = csv.reader(f)
-		for row in reader:
-			print('{:<9} {:>9}  {}'.format(row[0], row[1], row[5]))
-			rows.append([row[0], row[1], row[5]])
-	os.remove(filePath)
-
-	for i, row in enumerate(rows):
-		writerow(wks, row, i+1)
-
-	driver.quit()
-	print('Total time: {} s'.format(time.time() - time0))
+# def extract_transactions():
+# 	filePath = '/Users/Jaime/Downloads/TransactionHistory.csv'
+# 	while not os.path.exists(filePath):
+# 		print("waiting for download to finish")
+# 		time.sleep(1)
+# 	with open(filePath) as f:
+# 		reader = csv.reader(f)
+# 		for row in reader:
+# 			print('{:<9} {:>9}  {}'.format(row[0], row[1], row[5]))
+# 	os.remove(filePath)
